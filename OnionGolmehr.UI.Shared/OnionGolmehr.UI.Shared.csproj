@@ -23,4 +23,8 @@
     <ProjectReference Include="..\OnionGolmehr.Contracts\OnionGolmehr.Contracts.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Components\" />
+  </ItemGroup>
+
 </Project>
