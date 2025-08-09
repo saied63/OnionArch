@@ -1,0 +1,6 @@
+@OnionGolmehr.API_HostAddress = http://localhost:5224
+
+GET {{OnionGolmehr.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
