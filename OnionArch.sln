@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnionGolmehr.UI.Maui", "Oni
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnionGolmehr.Contracts", "OnionGolmehr.Contracts\OnionGolmehr.Contracts.csproj", "{03EEE93C-7A13-428B-A1EF-CFD12A0E43C3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnionGolmehr.Tests", "OnionGolmehr.Tests\OnionGolmehr.Tests.csproj", "{7F606A83-ED36-4F40-8AC0-6596DF1DD67F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -58,6 +60,10 @@ Global
 		{03EEE93C-7A13-428B-A1EF-CFD12A0E43C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{03EEE93C-7A13-428B-A1EF-CFD12A0E43C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{03EEE93C-7A13-428B-A1EF-CFD12A0E43C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F606A83-ED36-4F40-8AC0-6596DF1DD67F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F606A83-ED36-4F40-8AC0-6596DF1DD67F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F606A83-ED36-4F40-8AC0-6596DF1DD67F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F606A83-ED36-4F40-8AC0-6596DF1DD67F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
