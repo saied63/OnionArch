@@ -20,24 +20,24 @@
 .nav-brand {
     font-size: 1.2rem;
     font-weight: bold;
-    color: white;
+    color: pink;
     text-decoration: none;
 }
 
 .nav-toggle {
-    background: none;
+    display: block;
+    background-image: url("images/menu.png");
+    background-size: contain; /* or cover */
+    background-repeat: no-repeat;
+    background-position: center;
     border: none;
-    color: white;
-    font-size: 1.5rem;
+    width: 64px;
+    height: 64px;
     cursor: pointer;
+    z-index: 10;
 }
 
-.nav-toggle-icon {
-    display: inline-block;
-    width: 1.5rem;
-    height: 1.5rem;
-    background-image: url("data:image/svg+xml;base64,..."); /* Optional custom icon */
-}
+
 
 .nav-links {
     margin-top: 1rem;
