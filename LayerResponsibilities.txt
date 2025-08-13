@@ -1,0 +1,26 @@
+🧭 Layer Responsibilities
+Layer:	
+(Contracts)	
+Purpose:
+Defines data structures (DTOs) shared between layers or services
+Layer:	
+(Domain)
+Purpose:
+Contains core business logic and entities
+Layer:	
+(Application)	
+Purpose:
+Coordinates business rules, services, and orchestrates use cases
+Layer:	
+(Infrastructure)	
+Purpose:
+Handles external concerns like databases, APIs, file systems
+Layer:	 
+(API)	
+Purpose:
+Handles HTTP requests, controllers, and response formatting
+Layer:
+(Test)
+Purpose:
+Write Unite Tests for methods and classes using packages like 
+(xunit , bunit ,Moq , xUnite runner visual studio , Microsoft.net.test.sdk ,coverlet.collector)

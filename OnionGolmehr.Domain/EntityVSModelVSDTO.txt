@@ -1,0 +1,64 @@
+﻿one of the most important questions in backend development — 
+and understanding this will make your architecture clean, scalable
+, and professional.
+
+🧱 What Are Entities, Models, and DTOs?
+Let’s break them down clearly:
+
+1. Entities (Domain Layer)
+
+Represent core business objects.
+Usually map directly to database tables.
+Contain business logic and relationships.
+
+Example:
+
+public class WeatherForecast
+{
+    public Guid Id { get; set; }
+    public DateTime Date { get; set; }
+    public int TemperatureC { get; set; }
+    public string Summary { get; set; }
+}
+
+2. DTOs (Data Transfer Objects) (Contracts Layer)
+
+Used to send or receive data between layers or over the network.
+Contain only the data needed for a specific operation.
+Help protect your domain from being exposed directly.
+
+Example:
+
+public class WeatherForecastDto
+{
+    public DateOnly Date { get; set; }
+    public int TemperatureC { get; set; }
+    public string Summary { get; set; }
+    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+}
+
+3. Models (Presentation Layer)
+
+Used in the UI or frontend.
+Can be similar to DTOs but may include UI-specific formatting, validation, or display logic.
+
+✅ Why Use DTOs Instead of Entities?
+🔒 Security	Prevents exposing sensitive fields (like Id, UserId, etc.)
+🎯 Precision	Sends only the data needed — not the whole entity
+🔄 Decoupling	Keeps your domain logic separate from transport logic
+🧪 Validation & Shaping	DTOs can be shaped for specific views or use cases
+🔄 Versioning	Easier to evolve APIs without breaking internal logic
+
+🧠 When to Use Each ?
+
+Layer	           Use This Type	        Purpose
+Domain	           Entities	                Business logic, database mapping
+Application/API	   DTOs	                    Input/output for services and endpoints
+UI/Frontend	       Models or DTOs	        Display and user interaction
+
+🔧 Example Flow in Your Weather API
+Entity: WeatherForecast in Domain(layer)
+DTO: WeatherForecastDto in Contracts(layer)
+Controller: Maps entity → DTO and returns it
+
+Frontend: Receives DTO and displays it

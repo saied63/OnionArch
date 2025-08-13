@@ -1,5 +1,7 @@
 using AutoMapper;
 using OnionGolmehr.Application;
+using Microsoft.AspNetCore.Builder;
+
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -28,6 +30,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+// UseCorse exist in AspNetCore middleware builtin pipline
+app.UseCors("SecureCors");
 
 var summaries = new[]
 {
