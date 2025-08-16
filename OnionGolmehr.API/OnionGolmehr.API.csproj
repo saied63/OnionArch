@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <Folder Include="Middlewares\" />
+    <Folder Include="Filters\" />
   </ItemGroup>
 
 </Project>
