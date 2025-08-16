@@ -1,0 +1,49 @@
+
+OnionGolmehr (.sln)/
+├── Domain (.csproj)/
+│   └── Entities/
+│   └── Enums/
+│   └── ValueObjects/
+│   └── Exceptions/
+│   └── Interfaces/
+│       └── IRepository<T>
+│       └── IUnitOfWork
+
+├── Application(.csproj)/
+│   └── UseCases/
+│   └── Services/
+│   └── Validators/
+│   └── Interfaces/
+│       └── IWeatherService
+
+├── Contracts(.csproj)/
+│   └── DTOs/
+│   └── Requests/
+│   └── Responses/
+
+├── Infrastructure(.csproj)/
+│   └── Persistence/
+│       └── Repositories/
+│           └── WeatherRepository.cs
+│       └── UnitOfWork/
+│           └── UnitOfWork.cs
+│       └── Context/
+│           └── AppDbContext.cs
+│   └── ExternalServices/
+│   └── Extensions/
+│   └── Middlewares/
+
+├── API(.csproj)/
+│   └── Controllers/
+│   └── Filters/
+│   └── Extensions/
+│   └── Middlewares/
+
+├── UI.Shared/ or UI.Web(.csproj)/
+│   └── Models/
+│   └── Pages/
+│   └── Components/
+
+├── Tests(.csproj)/
+│   └── Unit/
+│   └── Integration/

@@ -1,0 +1,273 @@
+finalize your Onion Architecture into a reusable, cross-platform, well-commented structure —
+with example classes/interfaces names that clearly show intent,
+plus a short description for each folder/layer,
+plus package references per layer.
+
+Here’s the completed reference architecture for you to save and reuse in all future projects.
+
+📂 OnionArch.sln
+
+This is the solution root — all projects live here.
+The architecture follows the Onion principle:
+UI → Application → Domain ← Infrastructure
+(Dependencies always point inward; Domain has zero dependencies.)
+
+1️⃣ Domain (.csproj)
+
+Purpose: Core business logic and rules.
+No external package dependencies.
+This layer is pure C#, independent of any framework.
+
+Folders & Example Classes:
+
+Domain/
+│
+├── Entities/
+│   └── WeatherForecast.cs            // Entity representing domain object with rules
+│
+├── Enums/
+│   └── WeatherType.cs                 // Enum for weather conditions
+│
+├── ValueObjects/
+│   └── Temperature.cs                 // Immutable value object with validation logic
+│
+├── Exceptions/
+│   └── InvalidTemperatureException.cs // Domain-specific exception
+│
+└── Interfaces/
+    ├── IRepository<T>                 // Generic interface for data persistence
+    └── IUnitOfWork                     // Transactional boundary in persistence
+
+
+Packages: (none)
+
+2️⃣ Application (.csproj)
+
+Purpose: Orchestrates use cases, coordinates between Domain and Infrastructure,
+contains business workflows but no persistence logic.
+
+Folders & Example Classes:
+
+Application/
+│
+├── UseCases/
+│   └── GetWeatherForecastHandler.cs   // Handles request to retrieve forecast via IWeatherService
+│
+├── Services/
+│   └── WeatherService.cs              // Implements IWeatherService using repository abstraction
+│
+├── Validators/
+│   └── WeatherRequestValidator.cs     // FluentValidation for request models
+│
+└── Interfaces/
+    └── IWeatherService                // Abstraction for weather-related operations
+
+
+Packages:
+AutoMapper, AutoMapper.Extensions.Microsoft.DependencyInjection.Abstractions,
+FluentValidation, MediatR, Microsoft.Extensions.DependencyInjection.Abstractions
+
+3️⃣ Contracts (.csproj)
+
+Purpose: Data Transfer Objects between Application ↔ UI.
+No logic, only data models.
+
+Folders & Example Classes:
+
+Contracts/
+│
+├── DTOs/
+│   └── WeatherForecastDto.cs          // Simple DTO for sending forecast to UI
+│
+├── Requests/
+│   └── GetWeatherRequest.cs           // Request model for weather API
+│
+└── Responses/
+    └── GetWeatherResponse.cs          // Response model for weather API
+
+
+Packages: (none)
+
+4️⃣ Infrastructure (.csproj)
+
+Purpose: Implements Domain interfaces using real services like EF Core, external APIs, files, etc.
+
+Folders & Example Classes:
+
+Infrastructure/
+│
+├── Persistence/
+│   ├── Repositories/
+│   │   └── WeatherRepository.cs       // Implements IRepository<WeatherForecast> using EF
+│   │
+│   ├── UnitOfWork/
+│   │   └── UnitOfWork.cs              // EF Core transactional implementation
+│   │
+│   └── Context/
+│       └── AppDbContext.cs            // EF Core DbContext
+│
+├── ExternalServices/
+│   └── OpenWeatherApiClient.cs        // Calls external weather API
+│
+├── Extensions/
+│   └── ServiceCollectionExtensions.cs // Registers Infrastructure services in DI
+│
+└── Middlewares/
+    └── ExceptionHandlingMiddleware.cs // Centralized error handling
+
+
+Packages:
+Microsoft.AspNetCore.Identity.EntityFrameworkCore,
+Microsoft.EntityFrameworkCore,
+Microsoft.EntityFrameworkCore.SqlServer,
+Microsoft.EntityFrameworkCore.Tools,
+Microsoft.Extensions.DependencyInjection,
+Npgsql.EntityFrameworkCore.PostgreSQL
+
+5️⃣ API (.csproj)
+
+Purpose: ASP.NET Core Web API host for Application layer.
+
+Folders & Example Classes:
+
+API/
+│
+├── Controllers/
+│   └── WeatherController.cs           // REST API endpoint for weather
+│
+├── Filters/
+│   └── ValidateModelAttribute.cs      // Global request model validation
+│
+├── Extensions/
+│   └── SwaggerExtensions.cs           // Configures OpenAPI/Swagger
+│
+└── Middlewares/
+    └── RequestLoggingMiddleware.cs    // Logs incoming API requests
+
+
+Packages:
+Microsoft.AspNetCore.Authentication.JwtBearer,
+Swashbuckle.AspNetCore,
+Microsoft.EntityFrameworkCore,
+Microsoft.EntityFrameworkCore.Design,
+Microsoft.EntityFrameworkCore.Tools
+
+6️⃣ UI.Shared (.csproj)
+
+Purpose: Razor Class Library — reusable UI components, layouts, and pages for both Web & MAUI.
+
+Folders & Example Classes:
+
+UI.Shared/
+│
+├── Models/
+│   └── WeatherViewModel.cs            // Data model for UI binding
+│
+├── Pages/
+│   └── HomePage.razor                 // Landing page shared across platforms
+│
+└── Components/
+    └── WeatherCard.razor              // Component to display a forecast card
+
+
+Packages:
+Microsoft.AspNetCore.Components,
+Microsoft.AspNetCore.Components.Web,
+Microsoft.AspNetCore.Components.WebAssembly,
+Microsoft.Extensions.Localization,
+MudBlazor
+
+7️⃣ UI.Web (.csproj)
+
+Purpose: Blazor WebAssembly host project for Shared UI.
+
+Folders & Example Files:
+
+UI.Web/
+│
+├── Pages/
+│   └── _Host.cshtml                   // Entry point HTML
+│
+├── wwwroot/
+│   └── css/
+│
+└── App.razor                          // Router + MainLayout
+
+
+Packages:
+Microsoft.AspNetCore.Components.WebAssembly,
+Microsoft.AspNetCore.Components.WebAssembly.Authentication,
+Microsoft.AspNetCore.Components.WebAssembly.DevServer,
+Microsoft.Extensions.Http,
+MudBlazor
+
+8️⃣ UI.Maui (.csproj)
+
+Purpose: .NET MAUI Blazor Hybrid host for Shared UI.
+
+Folders & Example Files:
+
+UI.Maui/
+│
+├── MainPage.xaml                      // Hosts BlazorWebView
+├── App.xaml                           // Application resources
+└── MauiProgram.cs                     // Configures DI, services, BlazorWebView
+
+
+Packages:
+Microsoft.AspNetCore.Components.WebView.Maui,
+Microsoft.Extensions.Logging.Debug,
+Microsoft.Maui.Controls,
+Microsoft.Maui.Controls.Compatibility,
+Microsoft.Maui.Essentials,
+MudBlazor,
+MudBlazor.ThemeManager
+
+9️⃣ Tests (.csproj)
+
+Purpose: Unit, integration, and UI component tests.
+
+Folders & Example Tests:
+
+Tests/
+│
+├── Unit/
+│   └── WeatherServiceTests.cs         // Tests Application layer service
+│
+└── Integration/
+    └── WeatherApiTests.cs              // Tests API + Infrastructure integration
+
+
+Packages:
+bunit,
+coverlet.collector,
+Microsoft.NET.Test.Sdk,
+Moq,
+xunit,
+xunit.runner.visualstudio
+
+🔗 Dependency Flow
+
+UI.Web → UI.Shared, Application, Contracts
+
+UI.Maui → UI.Shared, Application, Contracts
+
+UI.Shared → Contracts
+
+Application → Domain, Contracts
+
+Infrastructure → Domain, Contracts
+
+API → Application, Infrastructure, Contracts
+
+Tests → Any layer being tested (prefer Application + Domain)
+
+If you save this structure, you’ll have a ready-made reference Onion Architecture that works for:
+
+Backend APIs
+
+Cross-platform Blazor UI (WebAssembly + MAUI Hybrid)
+
+Unit/Integration/UI testing
+
+Scalability to microservices

@@ -1,0 +1,140 @@
+OnionArch.sln/
+│
+├── Domain/                                  // (References: — none)
+│   ├── Entities/
+│   │   └── User.cs                          // Domain entity: Id, Name, Email (no EF/infra refs)
+│   ├── Enums/
+│   │   └── UserRole.cs                      // Enum: Admin, Customer, Guest
+│   ├── ValueObjects/
+│   │   └── Email.cs                         // Immutable VO: value + format validation
+│   ├── Exceptions/
+│   │   └── DomainException.cs               // Base exception for domain rule violations
+│   └── Interfaces/
+│       └── IRepository.cs                   // Minimal contract for aggregates (Add/Update/Get)
+│
+│   └── Packages/
+│       └── (keep domain pure – no external packages)
+│
+├── Contracts/                               // (References: — none)
+│   ├── DTOs/
+│   │   └── UserDto.cs                       // Data transfer model for API/UI (Id, Name, Email)
+│   ├── Requests/
+│   │   └── CreateUserRequest.cs             // API request model (Name, Email, Password)
+│   └── Responses/
+│       └── CreateUserResponse.cs            // API response model (Id, CreatedAt)
+│
+│   └── Packages/
+│       └── (keep DTOs pure – no external packages)
+│
+├── Application/                             // (References: Contracts, Domain)
+│   ├── UseCases/
+│   │   └── CreateUserCommand.cs             // MediatR command: carries CreateUserRequest
+│   │   └── CreateUserHandler.cs             // MediatR handler: maps, validates, calls repo/UoW
+│   ├── Services/
+│   │   └── UserService.cs                   // Orchestrates use cases; thin facade for UI/API
+│   ├── Validators/
+│   │   └── CreateUserValidator.cs           // FluentValidation rules for CreateUserRequest
+│   └── Interfaces/
+│       └── IUserService.cs                  // Contract exposed to API for user operations
+│
+│   └── Packages/
+│       ├── AutoMapper
+│       ├── AutoMapper.Extensions.Microsoft.DependencyInjection
+│       ├── FluentValidation
+│       └── MediatR
+│
+├── Infrastructure/                          // (References: Application, Domain)
+│   ├── Persistence/
+│   │   └── AppDbContext.cs                  // EF Core DbContext + DbSets
+│   │   └── Configurations/
+│   │       └── UserConfiguration.cs         // IEntityTypeConfiguration<User> (keys, limits)
+│   ├── ExternalServices/
+│   │   └── EmailSender.cs                   // Example SMTP/3rd-party mail service impl
+│   ├── Extensions/
+│   │   └── ServiceCollectionExtensions.cs   // AddDbContext, repos, UoW, providers registration
+│   └── Middlewares/
+│       └── RequestLoggingMiddleware.cs      // Example infra middleware (if used by API)
+│
+│   └── Packages/
+│       ├── Microsoft.EntityFrameworkCore
+│       ├── Microsoft.EntityFrameworkCore.Design
+│       ├── Microsoft.EntityFrameworkCore.Tools
+│       ├── Microsoft.EntityFrameworkCore.SqlServer
+│       ├── Npgsql.EntityFrameworkCore.PostgreSQL
+│       └── Microsoft.Extensions.DependencyInjection
+│
+├── API/                                     // (References: Application, Contracts, Domain, Infrastructure)
+│   ├── Controllers/
+│   │   └── UsersController.cs               // Endpoints: POST /users, GET /users/{id}
+│   ├── Filters/
+│   │   └── ValidationFilter.cs              // Runs FluentValidation; returns 400 with errors
+│   ├── Extensions/
+│   │   └── ApiServiceExtensions.cs          // Swagger, Auth, CORS, MediatR, AutoMapper wiring
+│   └── Middlewares/
+│       └── ApiExceptionMiddleware.cs        // Global exception to ProblemDetails
+│
+│   └── Packages/
+│       ├── Microsoft.AspNetCore.Authentication.JwtBearer
+│       ├── Microsoft.OpenApi
+│       ├── Swashbuckle.AspNetCore
+│       ├── Microsoft.EntityFrameworkCore     // (if doing migrations from API)
+│       ├── Microsoft.EntityFrameworkCore.Design
+│       └── Microsoft.EntityFrameworkCore.Tools
+│
+├── UI.Shared/                                // (References: API, Contracts)
+│   ├── Models/
+│   │   └── ProductModel.cs                  // UI model used by components (Id, Title, Price)
+│   ├── Pages/
+│   │   └── Home.razor                       // Shared homepage (uses shared components)
+│   └── Components/
+│       └── NavMenu.razor                    // Shared navigation (MudBlazor/vanilla)
+│
+│   └── Packages/
+│       ├── Microsoft.AspNetCore.Components
+│       ├── Microsoft.AspNetCore.Components.Web
+│       ├── Microsoft.AspNetCore.Components.WebAssembly
+│       ├── Microsoft.Extensions.Localization
+│       └── MudBlazor
+│
+├── UI.Web/                                   // (References: Contracts, UI.Shared)
+│   ├── Pages/
+│   │   └── Index.razor                      // Host landing (renders Shared/Home)
+│   ├── wwwroot/
+│   │   └── css/site.css
+│   └── App.razor                            // Router + Cascading services
+│
+│   └── Packages/
+│       ├── Microsoft.AspNetCore.Components.WebAssembly
+│       ├── Microsoft.AspNetCore.Components.WebAssembly.Authentication
+│       ├── Microsoft.AspNetCore.Components.WebAssembly.DevServer
+│       ├── Microsoft.Extensions.Http
+│       └── MudBlazor
+│
+├── UI.Maui/                                  // (References: Contracts, UI.Shared)
+│   ├── MainPage.xaml                         // MAUI host page containing BlazorWebView
+│   ├── App.xaml                              // App resources, theme
+│   └── MauiProgram.cs                        // Configure MAUI + BlazorWebView + DI
+│
+│   └── Packages/
+│       ├── Microsoft.Maui.Controls
+│       ├── Microsoft.Maui.Controls.Compatibility
+│       ├── Microsoft.Maui.Essentials
+│       ├── Microsoft.AspNetCore.Components.WebView.Maui
+│       ├── Microsoft.Extensions.Logging.Debug
+│       ├── MudBlazor
+│       └── MudBlazor.ThemeManager
+│
+└── Tests/                                    // (References: Application, Contracts, Domain, UI.Shared, Infrastructure)
+    ├── Unit/
+    │   └── UserServiceTests.cs              // Tests app services, validators, mapping
+    └── Integration/
+        └── UsersControllerTests.cs          // WebApplicationFactory + real EF (test DB)
+    │
+    └── Packages/
+        ├── xunit
+        ├── xunit.runner.visualstudio
+        ├── Microsoft.NET.Test.Sdk
+        ├── Moq
+        ├── FluentAssertions
+        ├── bunit
+        └── coverlet.collector
