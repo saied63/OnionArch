@@ -27,7 +27,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		CompleteGPTEditionForMyOnionArch.txt = CompleteGPTEditionForMyOnionArch.txt
 		CompleteGptWithPackagesAndRefrences.txt = CompleteGptWithPackagesAndRefrences.txt
 		LayerResponsibilities.txt = LayerResponsibilities.txt
+		MakeDtatabaseAndTables.txt = MakeDtatabaseAndTables.txt
 		PresentationLayer.txt = PresentationLayer.txt
+		Some Explanation about DBContext.txt = Some Explanation about DBContext.txt
 	EndProjectSection
 EndProject
 Global

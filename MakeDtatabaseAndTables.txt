@@ -1,0 +1,44 @@
+first aff all connectionstring to API/appSetting.json : 
+"ConnectionStrings": {
+  "DefaultConnection": "Host=localhost;Port=5432;Database=OnionArch;Username=saied63;Password=Pg7111443"
+}
+
+-- 1. Create the database
+CREATE DATABASE "OnionArch"
+    WITH 
+    OWNER = saied63
+    ENCODING = 'UTF8'
+    CONNECTION LIMIT = -1;
+
+-- 2. Connect to the newly created database
+\c OnionArch
+
+-- 3. Create the Continent table
+CREATE TABLE "Continent" (
+    id UUID PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    continent_name VARCHAR(100) NOT NULL,
+    weather_description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 4. Create the Cities table
+CREATE TABLE "Cities" (
+    id UUID PRIMARY KEY,
+    country_id UUID NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
+    summary TEXT,
+    temperature_c INTEGER,
+    temperature_f INTEGER,
+    geo_info TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_country
+        FOREIGN KEY (country_id)
+        REFERENCES "Continent"(id)
+        ON DELETE CASCADE
+);

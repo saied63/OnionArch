@@ -1,0 +1,23 @@
+What Is DbContext?
+DbContext is the bridge between your C# code and your
+database. 
+It tracks your entities,
+manages queries,
+and handles saving changes.
+
+Example :
+using Microsoft.EntityFrameworkCore;
+using OnionGolmehr.Domain.Entities; // namesapece of entities
+public class AppDbContext : DbContext
+{
+    // set tables from entits
+    public DbSet<Country> Countries { get; set; }
+    public DbSet<City> Cities { get; set; }
+    // primay Constructor to make path options to base (base = DbContext)
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+    // in OnModelCreating we will ?
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        // Fluent API configuration goes here
+    }
+}
