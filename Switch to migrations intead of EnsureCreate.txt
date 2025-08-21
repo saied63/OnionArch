@@ -1,0 +1,183 @@
+
+// use this instruction to switch from ensureCreat()(it is for demp and prototype applicaiton) to migrations
+
+//**** but tacke care about the path you install your packeages ***///
+
+// this instrucion is for another prject with different structure.
+
+first read this : why we are switching from EnsureCreate() to Migrations:
+This is the key difference between EnsureCreated() and Migrations. Let’s break it down very simply:
+🔹 EnsureCreated()
+It creates the database and tables immediately, based only on your 
+current entity classes and DbContext.
+Use case:
+Good for quick demos, prototypes, testing, or throwaway apps.
+When you just want: “I have entities → please make tables now.”
+Limitations:
+❌ It cannot update the database schema if you later change your models.
+❌ If the database already exists, it won’t apply changes safely 
+(you must drop & recreate).
+❌ No history of changes.
+👉 Think of it like:
+“One-shot database creation.”
+
+🔹 Migrations
+It creates step-by-step history of how your database schema should evolve as
+your models change.
+Instead of “just create it,” you write migration files that:
+Add/remove columns
+Change constraints
+Insert seed data
+Use case:
+Production or long-term projects (like OnionGolmehr).
+When your schema will change over time.
+Advantages:
+✅ You don’t lose data when updating schema.
+✅ You can roll back/forward to different versions.
+✅ Works with team collaboration and real apps.
+👉 Think of it like:
+“Version control for your database schema.”
+🔹 When to use which?
+Learning, prototyping, testing → EnsureCreated() is okay.
+Real project (with updates, production, OnionGolmehr) → Always use Migrations.
+✅ That’s why I told you:
+In EfCoreDemo → you started with EnsureCreated() to learn faster.
+But now, since you’re learning real EF Core usage,
+we’re switching to Migrations → because that’s what professionals always use in long-term projects.
+
+// how to:
+
+Step 0: 
+First of all to use migration cli commands :
+open a command windows in anywhere in your machin, (it is not has to be your project path)
+run this command :
+dotnet tool update --global dotnet-ef
+verify the package is installed:
+dotnet ef --version
+
+Step 1: 
+Remove EnsureCreated()
+Find this line in your Program.cs:
+using var context = new AppDbContext(options);
+context.Database.EnsureCreated();
+➡️ Delete it. We won’t use EnsureCreated() at all. Migrations will handle DB creation and updates.
+
+
+🔹 Step 2: Install Required Packages
+
+(go to view/Terminal in visual studio or open a terminal windows in project .sln path)
+
+Make sure your EfCoreDemo project has these packages:
+dotnet add package Microsoft.EntityFrameworkCore
+dotnet add package Microsoft.EntityFrameworkCore.Design
+dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL
+dotnet add package EFCore.NamingConventions
+
+//usage of packages
+Design → needed for migrations.
+Npgsql → PostgreSQL provider.
+NamingConventions → optional, for snake_case column/table names.
+
+🔹 Step 3: Create the First Migration
+From your project folder (EfCoreDemo), run:
+dotnet ef migrations add InitialCreate
+This will create a Migrations/ folder inside EfCoreDemo.
+EF will scan your AppDbContext and all entities in Entities/ to generate the initial SQL schema.
+
+🔹 Step 4: Apply Migration to Database
+Run:
+dotnet ef database update
+This will create your PostgreSQL database and tables based on the migration.
+You don’t need EnsureCreated() anymore — migrations handle everything.
+
+🔹 Step 5: Verify Database
+Open pgAdmin, TablePlus, or psql.
+You should see:
+Tables: users, posts (if we used the example entities).
+Table __EFMigrationsHistory → EF tracks applied migrations.
+🔹 Step 6: Future Entity Changes
+Whenever you add/change entities:
+Create a new migration:
+
+very important point:
+to use (dotnet ef migrations add InitialCreate) in 
+design time (not run_time)  we need to specifuc AppDbContet to ef command line
+using a factory methode , if we don't use this factory method we got an error 
+which will say:
+"say Unable to resolve service for type 'DbContextOptions<AppDbContext>"
+the reason of this error is :
+EF Core needs to create an instance of your DbContext (AppDbContext) 
+at design-time (outside of your app running).
+It doesn’t know how to pass the DbContextOptions you use in
+your Program.cs (because that runs only at runtime).
+
+// this is that factory method (just put it in same path which dbcontext exist 
+and it will work and recognize by Ef commands)
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
+using System.IO;
+public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
+{
+    public AppDbContext CreateDbContext(string[] args)
+    {
+        // Load configuration from appsettings.json
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory()) // current project folder
+            .AddJsonFile("appsettings.json")              // load settings
+            .Build();
+
+        var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+        var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
+        optionsBuilder.UseNpgsql(connectionString);
+
+        return new AppDbContext(optionsBuilder.Options);
+    }
+}
+
+and then this command work like charme in cmd of project path
+dotnet ef migrations add AddSomethingNew
+
+Apply it to DB:
+dotnet ef database update
+
+✅ That’s the professional workflow — fully compatible with what
+we’ll do in all projects .
+
+// important note to delete migration : 
+
+how can i remove migration and re create it 
+. it it enough to delete folder and run commands again ?
+
+No — don’t just delete the Migrations folder manually. EF Core keeps track of applied migrations inside your database in a special table called __EFMigrationsHistory. If you only delete the folder, EF will get confused because 
+the database still “remembers” the old migrations.
+Here are the proper ways:
+
+✅ Option 1: Remove the last migration (before applying it)
+If you haven’t run dotnet ef database update yet:
+dotnet ef migrations remove -p Infrastructure -s API
+
+👉 This removes the last migration and cleans up properly.
+✅ Option 2: Reset everything (start fresh)
+If you want to delete all migrations and start again:
+Delete the Migrations folder in your project 
+(e.g. Infrastructure/Migrations).
+Drop the database:
+
+dotnet ef database drop -p Infrastructure -s API
+(It will ask for confirmation: type y.)
+Create a new migration:
+dotnet ef migrations add InitialCreate -p Infrastructure -s API
+Apply it:
+dotnet ef database update -p Infrastructure -s API
+✅ Option 3: Rebuild with new migration but keep database data
+If you want to rebuild migration files but keep the existing database:
+Delete the Migrations folder
+Run:
+dotnet ef migrations add InitialCreate -p Infrastructure -s API --ignore-changes
+This will re-create migration files without re-applying changes to the DB.
+⚠️ Summary:
+If migration not applied yet → dotnet ef migrations remove.
+If applied and want fresh start → drop DB + delete Migrations folder + re-create.
+If DB should stay → --ignore-changes.

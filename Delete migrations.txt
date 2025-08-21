@@ -1,0 +1,36 @@
+// important note to delete migration : 
+
+how can i remove migration and re create it 
+. it it enough to delete folder and run commands again ?
+
+No — don’t just delete the Migrations folder manually. EF Core keeps track of applied migrations inside your database in a special table called __EFMigrationsHistory. If you only delete the folder, EF will get confused because 
+the database still “remembers” the old migrations.
+Here are the proper ways:
+
+✅ Option 1: Remove the last migration (before applying it)
+If you haven’t run dotnet ef database update yet:
+dotnet ef migrations remove -p Infrastructure -s API
+
+👉 This removes the last migration and cleans up properly.
+✅ Option 2: Reset everything (start fresh)
+If you want to delete all migrations and start again:
+Delete the Migrations folder in your project 
+(e.g. Infrastructure/Migrations).
+Drop the database:
+
+dotnet ef database drop -p Infrastructure -s API
+(It will ask for confirmation: type y.)
+Create a new migration:
+dotnet ef migrations add InitialCreate -p Infrastructure -s API
+Apply it:
+dotnet ef database update -p Infrastructure -s API
+✅ Option 3: Rebuild with new migration but keep database data
+If you want to rebuild migration files but keep the existing database:
+Delete the Migrations folder
+Run:
+dotnet ef migrations add InitialCreate -p Infrastructure -s API --ignore-changes
+This will re-create migration files without re-applying changes to the DB.
+⚠️ Summary:
+If migration not applied yet → dotnet ef migrations remove.
+If applied and want fresh start → drop DB + delete Migrations folder + re-create.
+If DB should stay → --ignore-changes.

@@ -1,0 +1,26 @@
+Install This Package To Convert Pascalcase To snake_case:
+
+dotnet add package EFCore.NamingConventions --version 9.0.0
+
+Usage:(in program.cs (Where dbcontext decleare))
+
+using EFCore.NamingConventions;
+var options = new DbContextOptionsBuilder<AppDbContext>()
+    .UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
+    .UseSnakeCaseNamingConvention()
+    .Options;
+
+What it does:
+Normally, EF Core will use PascalCase or camelCase for table/column names based on your C# properties:
+public class UserProfile
+{
+    public int Id { get; set; }
+    public string FirstName { get; set; }   // → "FirstName" in DB
+}
+But PostgreSQL is case-sensitive and prefers snake_case:
+user_profile
+first_name
+With .UseSnakeCaseNamingConvention(), EF automatically converts:
+UserProfile → user_profile
+FirstName → first_name
+This saves you from writing a lot of custom Fluent API mappings.

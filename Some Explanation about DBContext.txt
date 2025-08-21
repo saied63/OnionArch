@@ -21,3 +21,105 @@ public class AppDbContext : DbContext
         // Fluent API configuration goes here
     }
 }
+
+DbContext change tracking (how EF knows what to do)
+
+Core idea: DbContext keeps a Change Tracker. Each entity has a State:
+Added, Modified, Deleted, Unchanged, Detached.
+
+When states change
+
+Add: context.Add(entity) → Added → INSERT on SaveChanges().
+
+Modify: Change a tracked entity’s property → Modified → UPDATE on SaveChanges().
+
+Delete: context.Remove(entity) → Deleted → DELETE on SaveChanges().
+
+Unchanged: After SaveChanges(), tracker resets to Unchanged.
+
+Detached: Not tracked (e.g., new object not attached, or AsNoTracking() query).
+
+
+//********* important note when optimizeation is matter *******//:
+// 
+as a start point whwn we don't know where we should use tracjing and when not, go ahead by default : 
+context.ChangeTracker.AutoDetectChangesEnabled = true; // default
+and just when we don't need too modify list and only want to get and show them use
+var readOnly  = await context.Users.AsNoTracking().ToListAsync(); 
+to ignore tracked entity and just get it for view;
+//
+read carfully : 
+
+should i use untracked mode somewhere or i can go ahead by changeTracker.AutoDetectChangesEnabled() alway? because it seems faster and simpler
+ChatGPT said:
+
+Great question 👍 you’re digging into the core performance mechanics of EF Core! Let’s break it down carefully before you decide whether to use NoTracking or always rely on ChangeTracker.AutoDetectChangesEnabled.
+
+🔹 How EF Core Tracks Changes
+
+Tracked entities: When you load entities normally (context.Users.ToList()), EF attaches them to the ChangeTracker. Any changes (property updates, deletes, adds) are monitored. When you call SaveChanges(), EF compares current vs original values and generates SQL accordingly.
+
+Untracked entities: If you use .AsNoTracking() or globally configure NoTracking, EF doesn’t monitor changes. You still get your objects, but EF won’t know if you changed them → you’d have to manually tell EF what to update/insert/delete.
+
+AutoDetectChangesEnabled: This is about when EF checks for modifications.
+
+Default = true → EF scans tracked entities automatically before SaveChanges(), Add, Update, etc.
+
+If you set it false, you must manually call context.ChangeTracker.DetectChanges() when you want EF to check.
+
+Used in high-performance scenarios (e.g., bulk inserts) where constant scanning is wasteful.
+
+🔹 When to Use Each
+1. NoTracking (AsNoTracking)
+
+✔️ Best when:
+
+You just read data and don’t need to update it.
+
+Example: showing product list on a shopping site.
+
+⚠️ Not good when:
+
+You plan to modify the entities later. You’d need to Attach or Update them manually.
+
+2. Tracked (default, with AutoDetectChangesEnabled = true)
+
+✔️ Best when:
+
+You are doing typical CRUD: load → modify → save.
+
+Keeps life simple for most apps.
+
+⚠️ Performance cost:
+
+EF scans all tracked entities before saving → noticeable only with large graphs (tens of thousands of entities).
+
+3. Tracked with AutoDetectChangesEnabled = false
+
+✔️ Best when:
+
+You insert/update/delete thousands of rows in one go (e.g., importing CSV of 50k users).
+
+You don’t want EF to re-scan everything after each Add() call.
+
+You’ll call DetectChanges() once, just before SaveChanges().
+
+⚠️ Not good when:
+
+You forget to call DetectChanges(). EF may miss updates.
+
+🔹 Rule of Thumb
+
+Normal apps (like ours now) → just use tracked (default).
+
+Read-only queries → add .AsNoTracking() for small performance win.
+
+Bulk operations → disable AutoDetectChanges, do your work, then call DetectChanges() manually.
+
+✅ So: You don’t have to choose only one approach forever.
+
+For our professional project, we’ll default to tracked (so we don’t miss changes).
+
+We’ll sprinkle AsNoTracking where queries are clearly read-only.
+
+Later, if we hit performance issues, we’ll optimize with AutoDetectChangesEnabled = false for batch ops.
