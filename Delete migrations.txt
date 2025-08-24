@@ -3,7 +3,11 @@
 how can i remove migration and re create it 
 . it it enough to delete folder and run commands again ?
 
-No — don’t just delete the Migrations folder manually. EF Core keeps track of applied migrations inside your database in a special table called __EFMigrationsHistory. If you only delete the folder, EF will get confused because 
+No — don’t just delete the Migrations folder manually. 
+EF Core keeps track of applied migrations 
+inside your database in a special table called 
+__EFMigrationsHistory.// i saw this in my table
+If you only delete the folder, EF will get confused because 
 the database still “remembers” the old migrations.
 Here are the proper ways:
 

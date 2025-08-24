@@ -1,0 +1,19 @@
+get pid of certain database and kill it's opens sessions:
+(Example)
+SELECT pid FROM pg_stat_activity WHERE datname = 'postgres';
+
+for example it will give us wo pid:
+  pid
+-------
+ 10168 (adminstrator pid (we can kill this one))
+  5532
+(2 rows)
+Then we have it's open sessions and we can kill all pid sessions of this database
+by this Command:
+SELECT pg_terminate_backend(12345);(the only point is that we can not kill adminstrator pid)
+
+or we can kill all pids of all opened sessions of all databases
+by this command if we need to stop all background process:
+(for game_dev DB for example)
+
+SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'game_dev' AND pid <> pg_backend_pid();

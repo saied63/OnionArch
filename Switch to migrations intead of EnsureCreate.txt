@@ -1,5 +1,5 @@
 
-// use this instruction to switch from ensureCreat()(it is for demp and prototype applicaiton) to migrations
+// use this instruction to switch from ensureCreat()(it is for demo and prototype applicaiton) to migrations
 
 //**** but tacke care about the path you install your packeages ***///
 
@@ -137,7 +137,46 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
 }
 
 and then this command work like charme in cmd of project path
-dotnet ef migrations add AddSomethingNew
+
+dotnet ef migrations add InitialCreate -p Infrastructure -s API
+dotnet ef database update -p Infrastructure -s API
+
+note (about thoes -p):
+
+what is thoes -p you add to commands?
+
+The -p (or --project) flag in dotnet ef commands specifies which project 
+contains your DbContext and migrations.
+In multi-project solutions (like your Onion Architecture with API,
+Application, Infrastructure, etc.), EF Core needs to know where to put or find migrations.
+
+Example:
+
+Suppose your solution looks like this:
+
+PostgresDemo.sln
+│
+├── API/               (Startup project, runs the app)
+├── Infrastructure/    (Contains AppDbContext)
+├── Domain/
+├── Application/
+
+Add migration:
+
+dotnet ef migrations add InitialCreate -p Infrastructure -s API
+
+-p Infrastructure → project where AppDbContext is defined (where migrations should be stored).
+-s API → startup project (the one that has Program.cs / Startup.cs and is used to run the app).
+
+Update database:
+dotnet ef database update -p Infrastructure -s API
+
+Why we need this?
+EF tools run design-time services (like creating DbContext).
+In Onion / Clean Architecture, your DbContext is usually inside Infrastructure, but your startup logic (like reading appsettings.json, configuring DI, etc.) 
+is in the API project.
+That’s why we point EF Core to both the DbContext project (-p) and the startup project (-s).
+👉 Without -p and -s, EF assumes both are in the same project (which only works in small apps, not Onion).
 
 Apply it to DB:
 dotnet ef database update

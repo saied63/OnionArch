@@ -26,11 +26,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		almost Complete Solution Structure refrence.txt = almost Complete Solution Structure refrence.txt
 		CompleteGPTEditionForMyOnionArch.txt = CompleteGPTEditionForMyOnionArch.txt
 		CompleteGptWithPackagesAndRefrences.txt = CompleteGptWithPackagesAndRefrences.txt
+		Database Commands.txt = Database Commands.txt
 		Delete migrations.txt = Delete migrations.txt
+		dotnet tool install --global dotnet-ef.txt = dotnet tool install --global dotnet-ef.txt
+		Final Correct Database Commands.txt = Final Correct Database Commands.txt
 		LayerResponsibilities.txt = LayerResponsibilities.txt
 		MakeDtatabaseAndTables.txt = MakeDtatabaseAndTables.txt
+		Other SQLs Training(and lazy_explicit_eager)and etc.txt = Other SQLs Training(and lazy_explicit_eager)and etc.txt
 		PresentationLayer.txt = PresentationLayer.txt
 		Some Explanation about DBContext.txt = Some Explanation about DBContext.txt
+		SQL Commands Examples.txt = SQL Commands Examples.txt
 		Switch to migrations intead of EnsureCreate.txt = Switch to migrations intead of EnsureCreate.txt
 		UseSnakeCaseNamingConvention.txt = UseSnakeCaseNamingConvention.txt
 	EndProjectSection

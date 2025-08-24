@@ -1,0 +1,421 @@
+examples for almost all sql commands for a:
+database name "EfDemo" with two table named "users" and "posts"
+users entity:
+public class User
+{
+    public Guid Id { get; set; } = Guid.NewGuid();    // Primary Key
+    public string Name { get; set; } = "";
+    public string Email { get; set; } = "";
+    public ICollection<Post> Posts { get; set; } = new List<Post>();
+
+}
+posts entity:
+public class Post
+{
+              // PK
+   
+    public string Content { get; set; } = "";
+    public Guid UserId { get; set; }             // FK
+    public User User { get; set; } = default!;
+    public Guid KEY { get; set; } = Guid.NewGuid();   
+    public string Title { get; set; } = "";
+    Price DECIMAL(10,2)
+}
+Start Practieses : 
+
+Step 1 — Connect to PostgreSQL:
+
+psql -U postgres -d postgres
+👉 You are now inside the psql shell (postgres=# prompt).
+
+🔹 Step 2 — Database Management
+
+-- Drop and create database
+DROP DATABASE IF EXISTS "EfDemo";
+CREATE DATABASE "EfDemo";
+-- List all databases
+\l
+-- Connect to EfDemo
+\c EfDemo
+
+🔹 Step 3 — Table Management
+
+-- Create tables
+CREATE TABLE Users(
+    Id SERIAL PRIMARY KEY,
+    Name VARCHAR(100),
+    Email VARCHAR(150)
+);
+
+CREATE TABLE Products(
+    Id SERIAL PRIMARY KEY,
+    Title VARCHAR(100),
+    Price DECIMAL(10,2)
+);
+
+-- List tables
+\dt
+-- Drop a table
+DROP TABLE IF EXISTS Products;
+
+🔹 Step 4 — Altering Tables
+-- Add a new column
+ALTER TABLE Users ADD COLUMN Age INT;
+
+-- Rename a column
+ALTER TABLE Users RENAME COLUMN Name TO FullName;
+
+-- Change column type
+ALTER TABLE Users ALTER COLUMN Age TYPE BIGINT;
+
+-- Drop a column
+ALTER TABLE Users DROP COLUMN Age;
+
+🔹 Step 5 — Insert Data
+INSERT INTO Users (FullName, Email) VALUES ('Alice', 'alice@example.com');
+INSERT INTO Users (FullName, Email) VALUES ('Bob', 'bob@example.com');
+
+INSERT INTO Products (Title, Price) VALUES ('Juice', 12.50);
+INSERT INTO Products (Title, Price) VALUES ('Milk', 7.30);
+
+🔹 Step 6 — Query Data
+SELECT * FROM Users;
+SELECT FullName, Email FROM Users WHERE Id = 1;
+
+SELECT * FROM Products ORDER BY Price DESC;
+
+🔹 Step 7 — Update Data
+UPDATE Users SET Email = 'alice.new@example.com' WHERE Id = 1;
+UPDATE Products SET Price = Price * 1.1;
+
+🔹 Step 8 — Delete Data
+DELETE FROM Users WHERE Id = 2;
+DELETE FROM Products WHERE Price < 10;
+
+🔹 Step 9 — Joins (work with both tables)
+-- Example: Users ordering Products
+CREATE TABLE Orders(
+    Id SERIAL PRIMARY KEY,
+    UserId INT REFERENCES Users(Id),
+    ProductId INT REFERENCES Products(Id)
+);
+
+INSERT INTO Orders (UserId, ProductId) VALUES (1, 1);
+
+-- Join query
+SELECT U.FullName, P.Title, P.Price
+FROM Orders O
+JOIN Users U ON O.UserId = U.Id
+JOIN Products P ON O.ProductId = P.Id;
+
+
+//////////////////////////////////////////////////////////////////////
+another example:
+
+Perfect 👌 Now we’re talking with real project structure. Let’s go step by step. I’ll do two things for you:
+
+Give you the exact command-line workflow (Windows CMD/PowerShell) with the same database name (EfDemo) and the same two tables (Users, Posts).
+
+Explain Foreign Keys (FK) and Navigation Properties in EF Core with simple real-world meaning.
+
+🔹 Step 1 — Create Project (Windows CMD/PowerShell)
+
+Open Command Prompt (cmd.exe) or PowerShell, and type these commands from scratch:
+
+REM Create a new folder for your project
+mkdir EfCoreDemo
+cd EfCoreDemo
+
+REM Create a .NET console project
+dotnet new console -n EfCoreDemo
+
+cd EfCoreDemo
+
+REM Add EF Core packages
+dotnet add package Microsoft.EntityFrameworkCore
+dotnet add package Microsoft.EntityFrameworkCore.Design
+dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL
+
+🔹 Step 2 — Create Entities Folder
+
+Inside EfCoreDemo project, create a folder called Entities and add your classes:
+
+📂 EfCoreDemo/Entities/User.cs
+
+namespace EfCoreDemo.Entities;
+
+public class User
+{
+    public Guid Id { get; set; } = Guid.NewGuid();    // Primary Key
+    public string Name { get; set; } = "";
+    public string Email { get; set; } = "";
+
+    // Navigation Property: One user has many posts
+    public ICollection<Post> Posts { get; set; } = new List<Post>();
+}
+
+
+📂 EfCoreDemo/Entities/Post.cs
+
+namespace EfCoreDemo.Entities;
+
+public class Post
+{
+    public Guid Id { get; set; } = Guid.NewGuid();   // Primary Key
+    public string Title { get; set; } = "";
+    public string Content { get; set; } = "";
+
+    // Foreign Key (FK): refers to User.Id
+    public Guid UserId { get; set; }
+
+    // Navigation Property: Each post belongs to one user
+    public User User { get; set; } = default!;
+}
+
+🔹 Step 3 — Add DbContext
+
+📂 EfCoreDemo/AppDbContext.cs
+
+using Microsoft.EntityFrameworkCore;
+using EfCoreDemo.Entities;
+
+namespace EfCoreDemo;
+
+public class AppDbContext : DbContext
+{
+    public DbSet<User> Users { get; set; }
+    public DbSet<Post> Posts { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseNpgsql("Host=localhost;Database=EfDemo;Username=postgres;Password=yourpassword");
+    }
+}
+
+
+⚠️ Replace yourpassword with your real PostgreSQL password.
+
+🔹 Step 4 — Add Migration & Create Database
+
+Back in CMD/PowerShell, run:
+
+dotnet tool install --global dotnet-ef   # only once if not installed before
+
+dotnet ef migrations add InitialCreate
+dotnet ef database update
+
+
+✅ Now EF Core will create a database named EfDemo with Users and Posts tables.
+
+🔹 Step 5 — Test Insert/Read
+
+Edit Program.cs:
+
+using EfCoreDemo;
+using EfCoreDemo.Entities;
+
+using var db = new AppDbContext();
+
+// Create a user
+var user = new User { Name = "Alice", Email = "alice@example.com" };
+db.Users.Add(user);
+
+// Create a post for Alice
+var post = new Post { Title = "Hello EF Core", Content = "This is my first post!", User = user };
+db.Posts.Add(post);
+
+db.SaveChanges();
+
+// Read back
+foreach (var u in db.Users.Include(u => u.Posts))
+{
+    Console.WriteLine($"{u.Name} ({u.Email}) has {u.Posts.Count} posts");
+}
+
+
+Run:
+
+dotnet run
+
+
+You should see something like:
+
+Alice (alice@example.com) has 1 posts
+
+🔎 Explanation: Foreign Key & Navigation Properties
+
+👉 Foreign Key (FK) = A field in one table that points to the Primary Key (PK) in another table.
+
+In our case:
+
+User.Id = Primary Key
+
+Post.UserId = Foreign Key
+
+👉 Navigation Properties = The way EF Core lets you navigate between related entities.
+
+User.Posts → All posts written by that user (collection navigation).
+
+Post.User → The single user that owns this post (reference navigation).
+
+💡 Without navigation properties, you would need to write manual SQL joins. With them, EF Core automatically loads relationships.
+
+✅ Now you have:
+
+Database EfDemo
+
+Tables Users and Posts with FK relation
+
+Navigation between them in EF Core
+
+
+////////////////////////////////////////////////////////////
+
+another examples:
+Perfect 👍 now we’ll restart from scratch and do the 9 steps with
+your EfDemo database and the two tables (Users, Posts) using the 
+exact entities you gave me.
+
+We’ll use Windows Command Prompt (cmd) and Entity Framework Core 
+commands.
+
+🔹 Project Structure
+EfCoreDemo/
+ ├── EfCoreDemo.csproj
+ ├── Program.cs
+ └── Entities/
+      ├── User.cs
+      └── Post.cs
+
+🔹 Entities (your provided code)
+
+Entities/User.cs
+public class User
+{
+    public Guid Id { get; set; } = Guid.NewGuid();    // Primary Key
+    public string Name { get; set; } = "";
+    public string Email { get; set; } = "";
+    public ICollection<Post> Posts { get; set; } = new List<Post>();
+}
+
+Entities/Post.cs
+public class Post
+{
+    public Guid Id { get; set; } = Guid.NewGuid();    // PK
+    public string Title { get; set; } = "";
+    public string Content { get; set; } = "";
+    public Guid UserId { get; set; }                  // FK
+    public User User { get; set; } = default!;
+}
+
+1. Install EF Core + Provider
+
+(Here we use SQL Server as example. If PostgreSQL, change provider.)
+dotnet add package Microsoft.EntityFrameworkCore
+dotnet add package Microsoft.EntityFrameworkCore.SqlServer
+dotnet add package Microsoft.EntityFrameworkCore.Tools
+
+3. Create DbContext
+
+Create file AppDbContext.cs:
+
+using Microsoft.EntityFrameworkCore;
+using EfCoreDemo.Entities;
+namespace EfCoreDemo;
+public class AppDbContext : DbContext
+{
+    public DbSet<User> Users { get; set; }
+    public DbSet<Post> Posts { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseSqlServer(
+            "Server=localhost;Database=EfDemo;Trusted_Connection=True;TrustServerCertificate=True"
+        );
+    }
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.Posts)
+            .WithOne(p => p.User)
+            .HasForeignKey(p => p.UserId);
+    }
+}
+
+4. Add Migration
+dotnet ef migrations add InitialCreate
+
+5. Apply Migration → Create Database
+dotnet ef database update
+
+✔ Now DB EfDemo is created with Users and Posts tables and FK.
+6. Insert Sample Data
+
+Edit Program.cs:
+using EfCoreDemo;
+using var db = new AppDbContext();
+// Add user + posts if not exists
+if (!db.Users.Any())
+{
+    var user = new EfCoreDemo.Entities.User
+    {
+        Name = "Alice",
+        Email = "alice@example.com",
+        Posts = new List<EfCoreDemo.Entities.Post>
+        {
+            new EfCoreDemo.Entities.Post { Title = "Hello World", Content = "My first post!" },
+            new EfCoreDemo.Entities.Post { Title = "Second Post", Content = "EF Core is great!" }
+        }
+    };
+
+    db.Users.Add(user);
+    db.SaveChanges();
+}
+Run:
+dotnet run
+
+7. Query Data
+
+Update Program.cs:
+
+using EfCoreDemo;
+using Microsoft.EntityFrameworkCore;
+using var db = new AppDbContext();
+var users = db.Users.Include(u => u.Posts).ToList();
+foreach (var u in users)
+{
+    Console.WriteLine($"{u.Name} ({u.Email})");
+    foreach (var p in u.Posts)
+    {
+        Console.WriteLine($"   - {p.Title}: {p.Content}");
+    }
+}
+Run:
+dotnet run
+
+8. Update Data
+var user = db.Users.First();
+user.Name = "Alice Updated";
+db.SaveChanges();
+Run again:
+dotnet run
+
+9. Delete Data
+var user = db.Users.Include(u => u.Posts).First();
+db.Posts.RemoveRange(user.Posts);
+db.Users.Remove(user);
+db.SaveChanges();
+
+📌 Explanation of FK & Navigation Properties
+
+FK (Foreign Key):
+UserId in Post is the foreign key → it links a post to a specific user.
+Example: Post.UserId = guid of Alice
+
+Navigation Property:
+In Post: public User User { get; set; } → lets you access the parent
+user of a post.
+In User: public ICollection<Post> Posts { get; set; } → lets you access 
+all posts of that user.
+Together, they make EF Core automatically understand the one-to-many
+relationship between User and Post.

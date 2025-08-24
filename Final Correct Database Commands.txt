@@ -1,0 +1,195 @@
+///////////////////////////////////
+1. Connect to postgres: 
+psql -U postgres (!!! Don't enter database name -d postgres or -d saied63 or ... )
+Password for user postgres:(enter admin password of postgress if you don't set it in 
+installation go to pgadmin : login/group roles then select postgress role and set a password for it)
+////////////////////////////////////
+2. Create Database to postress (if Migreations already exist in project:)
+postgres=# CREATE DATABASE "EfDemo" OWNER "saied63";
+//////////////////////////////////
+3. if you already made migrations from your entities in your project
+(Migration folder exist but database has a red cross or has no table ) 
+, best way is to create it with above command in cmd
+(open cmd and go to your project or open it drect inside project folder) 
+and then start move migrations(inside your ptoject) to postgress using 
+3.1 : dotnet ef migrations add InitialCreate and then :
+if you got error it means some migration tables or codes is missed and you 
+should remove migration and database and make it agine or
+if it told you The name 'InitialCreate' is used by an existing migration.
+it means migration is alrady added to ef core and you should run update
+3.2 : dotnet ef database update
+after update command if you got error it is better you tyy to make database 
+yourself wih query tools or by cmd or by pgadmin and try again and this one
+if you still got error remove migration and start again:
+if you want verify that migration is done or not run this query in pgadmin or postgress query :
+right click on database in pg admin and run(SELECT * FROM "__EFMigrationsHistory") 
+or login to database using (psql -U username -d database_name) in cmd and run
+(psql SELECT * FROM "__EFMigrationsHistory");
+////////////////////////////////////////////////////////////
+Drop Database : 
+if you want drop database from postgres first login like below in CMD(project direction is better) :
+(you can't use drop from an account that is owner of database it is like you want destroy the floor under your feet)
+psql -U postgres
+or 
+psql -U postgres -d postgres
+and then run :
+DROP DATABASE IF EXISTS "EfDemo"; (don't forget semicolon)
+Recreate it after drop :
+CREATE DATABASE "EfDemo" OWNER postgres;
+//////////////////////////////////////////
+4. if you want drop a database and you think closed all sessions that
+are using that database but still it say some session are using that
+database and you musi kill them all first . you can run the below 
+command from postgres user and then you can call Drop without any issue:
+4.1 : (kill all sessions)
+SELECT pg_terminate_backend(pid)
+FROM pg_stat_activity
+WHERE datname = 'game_dev'
+  AND pid <> pg_backend_pid();
+
+4.2 : 
+DROP DATABASE IF EXISTS "EfDemo";
+////////////////////////////////////////////
+5. 
+\q : Quite from a current database
+\l : list of databases and owners
+\c (like:game_dev): connect to certain database (after connect to a user)(\c 'game_dev')
+
+//////////////////////////////////////
+6.Rename the Database
+(PostgreSQL doesn't support direct rename)
+You must create a new one and migrate data manually:
+6.1 : CREATE DATABASE "EfDemoRenamed" OWNER username;
+6.2 : \q (be sure you are inside project folder)
+if Migration folder still exist Leave them as they are and change db name in connection strings
+(like: in appSetting.json and factory methde of AppDBCondext)
+-- Then migrate data if needed ;
+6.3 : dotnet ef add migrations InitCreate = name must be same as
+migration that you want make database from it (in most case it tell migration is already exist 
+or used by an existing migration that is ok)
+6.4 : dotnet ef database update
+6.5 : back to postgress super account (psql -U postgres -d postgres || psql -U postgres)
+6.2 : DROP DATABASE "EfDemo"; (drop old database)
+///////////////////////////////
+7.Drop Tables:
+normal command : DROP TABLE IF EXISTS users(table name);
+7.1 : if there was a fk in table we got an error that say we can't delete table
+because other object(table) is depended on it:
+for example if there is a userId fk in post table we ot this error:
+(EfcoreDB=# DROP TABLE IF EXISTS "users";
+ERROR:  cannot drop table users because other objects depend on it
+DETAIL:  constraint fk_posts_users_user_id on table posts depends on table users
+HINT:  Use DROP ... CASCADE to drop the dependent objects too.)
+but it say us we can drop both table together that we will disscuss about it later.
+7.2: When we are dropping all tables inside database we can see there is an extra
+table bade by efcore that i about migration history ( __EFMigrationsHistory).
+should i remove  __EFMigrationsHistory too ? 
+//////////////// Answer 1
+When to Drop It?
+Scenario	                            Drop __EFMigrationsHistory?
+Dropping all tables for a clean reset	            ✅ Yes
+Rebuilding schema from scratch	                    ✅ Yes
+Keeping existing schema and adding new migrations	❌ No
+Switching to manual SQL management	                ✅ Yes (optional)
+/////////////// Answer 2
+Should i drop it when we are drop all our tabes?
+Why Drop __EFMigrationsHistory?
+This table tracks which EF Core migrations have been applied.
+If you drop all other tables but leave this one, EF Core will 
+think the schema isstill up-to-date.
+//////////////// Answer 3
+shold i drop it when i just remove the tables that we made ourself 
+not them that ef core made automat?
+You're asking whether you should drop the __EFMigrationsHistory table 
+if you're only removing the tables you created manually, 
+not the ones EF Core generated through migrations.
+Here’s the key distinction:
+Should You Drop __EFMigrationsHistory?
+✅ No, if:
+You're only dropping your own custom tables 
+(e.g., ones you created manually via SQL or outside EF Core)
+You still want EF Core to track and manage migrations
+You plan to continue using EF Core to apply future migrations
+Keeping __EFMigrationsHistory allows EF Core to know which migrations
+have already been applied, so it won’t try to reapply them or throw schema conflicts.
+✅Yes, if:
+You're dropping all EF Core-managed tables 
+(e.g., those created via dotnet ef database update)
+You want to reset your migration history and start fresh
+You're switching to manual SQL management and no longer 
+using EF Core migrations
+Dropping it in this case avoids confusion and lets you 
+reinitializeyour schema cleanly.
+Summary :
+Action	Drop __EFMigrationsHistory?	Why
+Dropping only custom/manual tables	❌ No	EF Core still needs it
+Dropping EF Core-generated tables	✅ Yes	Clean reset
+Switching to manual SQL	✅ Optional	Depends on your workflow
+That leads to confusion or errors when you try to apply migrations again.
+///////////////////
+8. Remove migrations that are already in use by a database:
+if you want remove migration using command below:
+dotnet ef migrations remove
+and it told you an error like:
+
+The migration '20250823005850_InitialCreate' has already been
+applied to the database. Revert it and try again. If the migration
+has been applied to other databases, consider reverting its changes
+using a new migration instead.
+it means dotnet is trying to remove last used migrations which is InitialCreate here
+and because we used it in our last useage . we can't remove it now 
+
+we have 3 option , 
+8.1 : Option 1:first we can Revert the Migration using the below order:
+	dotnet ef database update 0 :
+	This rolls back all migrations and drops the schema created by EF Core.
+	Then you can safely run:
+	dotnet ef migrations remove
+8.2 : Option 2: Create a Reverting Migration:(a new migration)
+	If the migration has been applied to other databases and you don’t want to break them,
+	create a new migration that undoes the changes:
+	dotnet ef migrations add RevertInitialCreate and after this command :
+	Then manually delete or reverse the schema changes inside the new migration file.
+8.3 : Option 3: Reset Everything (Clean Slate)
+	DROP DATABASE "EfDemo";
+	Delete the Migrations folder
+	Create a new migration:
+	dotnet ef migrations add InitialCreate
+	dotnet ef database update
+
+9. 
+
+10.get pid of certain database and kill it's opens sessions:
+SELECT pid FROM pg_stat_activity WHERE datname = 'postgres';
+for example it will give us wo pid:
+  pid
+-------
+ 10168 (adminstrator pid (we can kill this one))
+  5532
+(2 rows)
+Then we have it's open sessions and we can kill all pid sessions of this database
+by this Command:
+SELECT pg_terminate_backend(12345);(the only point is that we can not kill adminstrator pid)
+or we can kill all pids of all opened sessions of databases 
+by this command if we need to stop all background process:
+SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'game_dev' AND pid <> pg_backend_pid();
+
+10. reaname a database in psql:
+first connect to psql (postgres prefere(not that one we want))
+second close all sessions of it's opened pids one by one or run kill all pid command
+third rename database using this command :
+ALTER DATABASE "from_name" RENAME TO "to_name";
+
+10 : Create Tables for Two Entities (e.g., users and posts)
+
+ISSUEs : some hardcoe issue to find:
+1.
+If you accidentally press Enter before finishing the command,
+psql thinks you're writing a multi-line statement and waits for more input.
+You’ll see the prompt change from EfcoreDB=# to EfcoreDB-#.
+(it will happened to me and waist alot of time of me)
+
+
+
+
+

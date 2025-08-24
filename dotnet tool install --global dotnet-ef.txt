@@ -1,0 +1,11 @@
+to dotnet commands work in cmd we must install the package globally in CMD:
+
+dotnet tool install --global dotnet-ef
+
+and if we installed it befor and it doesn't work now . 
+we should update it:
+
+dotnet tool update --global dotnet-ef
+
+Verify:
+dotnet ef --version

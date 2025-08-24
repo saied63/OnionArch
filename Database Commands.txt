@@ -1,0 +1,14 @@
+//from CMD
+1.Connect to Database :
+
+psql -U saied63 -d EfDemo  (-U = username -d=database)
+
+2.Enter your Password.
+
+3.Add A column to a table :
+ALTER TABLE users ADD COLUMN age INTEGER 
+
+4.Drop a Column:
+ALTER TABLE users DROP COLUMN age;
+
+5.
